@@ -1,0 +1,32 @@
+ngx_feature_name=
+ngx_feature_run=no
+ngx_feature_incs="#include <libjsonnet.h>"
+ngx_feature_test="jsonnet_version();"
+
+if [ -n "$LIBJSONNET_INC" -o -n "$LIBJSONNET_LIB" ]; then
+  ngx_feature="libjsonnet library in directories specified by LIBJSONNET_INC ($LIBJSONNET_INC) and LIBJSONNET_LIB ($LIBJSONNET_LIB)"
+  ngx_feature_path="$LIBJSONNET_INC"
+  ngx_feature_libs="-L$LIBJSONNET_LIB -ljsonnet"
+  . auto/feature
+else
+  ngx_feature="libjsonnet library"
+  ngx_feature_path=
+  ngx_feature_libs="-ljsonnet"
+  . auto/feature
+fi
+
+
+if [ $ngx_found = yes ]; then
+  CORE_INCS="$CORE_INCS $ngx_feature_path"
+  CORE_LIBS="$CORE_LIBS $ngx_feature_libs"
+else
+  cat << END
+  $0: error: the ngx_http_jsonnet addon requires the libjsonnet library.
+END
+  exit 1
+fi
+
+ngx_addon_name=ngx_http_jsonnet_module
+HTTP_MODULES="$HTTP_MODULES ngx_http_jsonnet_module"
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/src/ngx_http_jsonnet_module.c"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $ngx_addon_dir/src/ngx_http_jsonnet_module.h"
